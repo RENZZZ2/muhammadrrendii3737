@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KOnversi Xlsx,xls To Txt</title>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        header {
+            background: linear-gradient(90deg, #0078d7, #005bb5);
+            color: white;
+            text-align: center;
+            padding: 30px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+
+        main {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .upload-section {
+            margin: 20px auto;
+            max-width: 600px;
+            padding: 25px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .upload-section h2 {
+            margin-bottom: 15px;
+            color: #0078d7;
+        }
+
+        input[type="file"] {
+            display: block;
+            margin: 10px auto;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 12px 20px;
+            font-size: 16px;
+            background: linear-gradient(90deg, #0078d7, #005bb5);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s ease;
+        }
+
+        button:hover {
+            background: linear-gradient(90deg, #005bb5, #003f8c);
+            transform: scale(1.05);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 10px;
+            background-color: #ddd;
+        }
+
+        #statusMessage {
+            margin-top: 10px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>KOnversi Xlsx,xls To Txt</h1>
+        <p>Convert multiple Excel files to TXT and download them instantly!</p>
+    </header>
+    <main>
+        <section class="upload-section">
+            <h2>Upload Your Files</h2>
+            <input type="file" id="fileInput" accept=".xls, .xlsx" multiple>
+            <button id="convertButton">Convert and Download Files</button>
+            <p id="statusMessage"></p>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 KOnversi Xlsx,xls To Txt. All rights reserved.</p>
+    </footer>
+    <script>
+        document.getElementById('convertButton').addEventListener('click', () => {
+            const fileInput = document.getElementById('fileInput');
+            const statusMessage = document.getElementById('statusMessage');
+            statusMessage.textContent = ''; // Clear previous status message
+
+            if (fileInput.files.length === 0) {
+                statusMessage.textContent = "Please select at least one file to convert.";
+                return;
+            }
+
+            Array.from(fileInput.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    const data = new Uint8Array(event.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+
+                    // Get the first sheet
+                    const sheetName = workbook.SheetNames[0];
+                    const sheet = workbook.Sheets[sheetName];
+
+                    // Convert the sheet to TXT
+                    const txtContent = XLSX.utils.sheet_to_csv(sheet, { FS: '\t' });
+
+                    // Use the original file name, replacing the extension
+                    const fileName = file.name.replace(/\.(xls|xlsx)$/i, '.txt');
+
+                    // Create a blob and trigger download
+                    const blob = new Blob([txtContent], { type: "text/plain" });
+                    const url = URL.createObjectURL(blob);
+
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = fileName;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                };
+
+                reader.readAsArrayBuffer(file);
+            });
+
+            statusMessage.textContent = "Files converted and downloaded successfully!";
+        });
+    </script>
+</body>
+</html>
